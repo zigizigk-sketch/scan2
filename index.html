@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Склад — Сканер</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a23;
+    --border: #252b38;
+    --accent-green: #00e676;
+    --accent-red: #ff3d57;
+    --accent-blue: #448aff;
+    --text: #e8ecf4;
+    --muted: #5a6072;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    box-shadow: 0 0 8px var(--accent-green);
+    animation: pulse 2s infinite;
+    margin-left: auto;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* OPERATION TOGGLE */
+  .op-toggle {
+    display: flex;
+    margin: 16px 16px 0;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .op-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-family: 'Unbounded', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .op-btn.active-receive {
+    background: var(--accent-green);
+    color: #000;
+  }
+
+  .op-btn.active-ship {
+    background: var(--accent-red);
+    color: #fff;
+  }
+
+  /* FORM */
+  .form {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(68, 138, 255, 0.15);
+  }
+
+  input#barcode:focus {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.15);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 2px;
+  }
+
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .scan-hint {
+    font-size: 10px;
+    color: var(--muted);
+    padding: 4px 0 0 2px;
+  }
+
+  /* SUBMIT BUTTON */
+  .submit-btn {
+    margin-top: auto;
+    padding: 18px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .submit-btn.receive {
+    background: var(--accent-green);
+    color: #000;
+  }
+
+  .submit-btn.ship {
+    background: var(--accent-red);
+    color: #fff;
+  }
+
+  .submit-btn:active {
+    transform: scale(0.98);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90vw;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.success { border-color: var(--accent-green); color: var(--accent-green); }
+  .toast.error { border-color: var(--accent-red); color: var(--accent-red); }
+  .toast.loading { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+  /* LOG */
+  .log-section {
+    margin: 0 16px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .log-header {
+    padding: 10px 14px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .log-clear {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .log-items {
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .log-item {
+    padding: 10px 14px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .log-item:last-child { border-bottom: none; }
+
+  .log-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .log-badge.receive { background: rgba(0,230,118,0.15); color: var(--accent-green); }
+  .log-badge.ship { background: rgba(255,61,87,0.15); color: var(--accent-red); }
+
+  .log-info { color: var(--text); line-height: 1.5; }
+  .log-time { color: var(--muted); font-size: 10px; margin-top: 2px; }
+
+  /* SETTINGS */
+  .settings-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin: 0 16px 16px;
+    width: calc(100% - 32px);
+    transition: all 0.2s;
+  }
+
+  .settings-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+  .settings-panel {
+    display: none;
+    margin: 0 16px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+
+  .settings-panel.open { display: block; }
+
+  .settings-panel label { margin-bottom: 8px; display: block; }
+
+  .settings-panel input {
+    font-size: 11px;
+    padding: 10px 12px;
+  }
+
+  .settings-save {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    background: var(--accent-blue);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .empty-log {
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⬡ WMS Scan</div>
+  <div class="status-dot" id="statusDot"></div>
+</header>
+
+<!-- OPERATION TOGGLE -->
+<div class="op-toggle">
+  <button class="op-btn active-receive" id="btnReceive" onclick="setOp('receive')">▼ Приёмка</button>
+  <button class="op-btn" id="btnShip" onclick="setOp('ship')">▲ Отгрузка</button>
+</div>
+
+<!-- FORM -->
+<div class="form">
+  <div class="field">
+    <label>Штрихкод товара</label>
+    <input type="text" id="barcode" placeholder="Сканируй или введи вручную" autofocus autocomplete="off">
+    <span class="scan-hint">← курсор должен быть здесь при сканировании</span>
+  </div>
+
+  <div class="field">
+    <label>Название товара</label>
+    <input type="text" id="name" placeholder="Введи название">
+  </div>
+
+  <div class="field">
+    <label>Количество</label>
+    <input type="number" id="qty" value="1" min="1" inputmode="numeric">
+  </div>
+
+  <div class="field">
+    <label>Место на складе (полка)</label>
+    <input type="text" id="shelf" placeholder="Напр: A-12-3" autocomplete="off">
+  </div>
+
+  <button class="submit-btn receive" id="submitBtn" onclick="submitScan()">
+    ✓ Записать приёмку
+  </button>
+</div>
+
+<!-- LOG -->
+<div class="log-section">
+  <div class="log-header">
+    <span>Последние записи</span>
+    <button class="log-clear" onclick="clearLog()">очистить</button>
+  </div>
+  <div class="log-items" id="logItems">
+    <div class="empty-log">Записей пока нет</div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<button class="settings-btn" onclick="toggleSettings()">⚙ Настройки (URL скрипта)</button>
+<div class="settings-panel" id="settingsPanel">
+  <div class="field">
+    <label>Google Apps Script URL</label>
+    <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+  </div>
+  <div class="field" style="margin-top:10px">
+    <label>Имя сотрудника</label>
+    <input type="text" id="workerName" placeholder="Иванов И.">
+  </div>
+  <button class="settings-save" onclick="saveSettings()">Сохранить</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentOp = 'receive';
+  let log = JSON.parse(localStorage.getItem('wms_log') || '[]');
+
+  // Load settings
+  document.getElementById('scriptUrl').value = localStorage.getItem('wms_url') || '';
+  document.getElementById('workerName').value = localStorage.getItem('wms_worker') || '';
+
+  renderLog();
+
+  // Auto-focus barcode on page load and after any click
+  document.addEventListener('click', function(e) {
+    if (!['scriptUrl','workerName','qty','name','shelf'].includes(e.target.id)) {
+      setTimeout(() => document.getElementById('barcode').focus(), 100);
+    }
+  });
+
+  // Enter on barcode field — move to name
+  document.getElementById('barcode').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const name = document.getElementById('name');
+      if (!name.value) {
+        name.focus();
+      } else {
+        submitScan();
+      }
+    }
+  });
+
+  function setOp(op) {
+    currentOp = op;
+    const btnReceive = document.getElementById('btnReceive');
+    const btnShip = document.getElementById('btnShip');
+    const submitBtn = document.getElementById('submitBtn');
+
+    btnReceive.className = 'op-btn' + (op === 'receive' ? ' active-receive' : '');
+    btnShip.className = 'op-btn' + (op === 'ship' ? ' active-ship' : '');
+
+    if (op === 'receive') {
+      submitBtn.className = 'submit-btn receive';
+      submitBtn.textContent = '✓ Записать приёмку';
+    } else {
+      submitBtn.className = 'submit-btn ship';
+      submitBtn.textContent = '✓ Записать отгрузку';
+    }
+  }
+
+  async function submitScan() {
+    const barcode = document.getElementById('barcode').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const qty = document.getElementById('qty').value;
+    const shelf = document.getElementById('shelf').value.trim();
+    const url = localStorage.getItem('wms_url');
+    const worker = localStorage.getItem('wms_worker') || '';
+
+    if (!barcode) {
+      showToast('error', '⚠ Введи или отсканируй штрихкод');
+      document.getElementById('barcode').focus();
+      return;
+    }
+    if (!name) {
+      showToast('error', '⚠ Введи название товара');
+      document.getElementById('name').focus();
+      return;
+    }
+
+    const entry = {
+      timestamp: new Date().toLocaleString('ru'),
+      operation: currentOp === 'receive' ? 'Приёмка' : 'Отгрузка',
+      barcode,
+      name,
+      qty: parseInt(qty),
+      shelf,
+      worker
+    };
+
+    if (!url) {
+      // Offline mode — just log locally
+      addToLog(entry);
+      showToast('success', '✓ Сохранено локально (нет URL)');
+      resetForm();
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    showToast('loading', '⟳ Отправляю...');
+
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      addToLog(entry);
+      showToast('success', '✓ Записано в таблицу!');
+      resetForm();
+    } catch (err) {
+      addToLog({ ...entry, error: true });
+      showToast('error', '✗ Ошибка сети, записано локально');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('barcode').value = '';
+    document.getElementById('name').value = '';
+    document.getElementById('qty').value = '1';
+    // shelf оставляем — обычно не меняется между сканами
+    document.getElementById('barcode').focus();
+  }
+
+  function addToLog(entry) {
+    log.unshift(entry);
+    if (log.length > 50) log = log.slice(0, 50);
+    localStorage.setItem('wms_log', JSON.stringify(log));
+    renderLog();
+  }
+
+  function renderLog() {
+    const el = document.getElementById('logItems');
+    if (!log.length) {
+      el.innerHTML = '<div class="empty-log">Записей пока нет</div>';
+      return;
+    }
+    el.innerHTML = log.map(e => `
+      <div class="log-item">
+        <span class="log-badge ${e.operation === 'Приёмка' ? 'receive' : 'ship'}">${e.operation}</span>
+        <div>
+          <div class="log-info">${e.barcode} · ${e.name} · ${e.qty} шт${e.shelf ? ' · ' + e.shelf : ''}</div>
+          <div class="log-time">${e.timestamp}${e.worker ? ' · ' + e.worker : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function clearLog() {
+    log = [];
+    localStorage.removeItem('wms_log');
+    renderLog();
+  }
+
+  function showToast(type, msg) {
+    const toast = document.getElementById('toast');
+    toast.className = `toast ${type}`;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function toggleSettings() {
+    document.getElementById('settingsPanel').classList.toggle('open');
+  }
+
+  function saveSettings() {
+    localStorage.setItem('wms_url', document.getElementById('scriptUrl').value.trim());
+    localStorage.setItem('wms_worker', document.getElementById('workerName').value.trim());
+    document.getElementById('settingsPanel').classList.remove('open');
+    showToast('success', '✓ Настройки сохранены');
+  }
+</script>
+</body>
+</html>
