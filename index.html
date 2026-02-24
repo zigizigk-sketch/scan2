@@ -28,12 +28,15 @@
   input[type=text]{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;width:100%;-webkit-appearance:none}
   input[type=text]:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(68,138,255,.15)}
   input#barcode:focus{border-color:var(--accent-green);box-shadow:0 0 0 3px rgba(0,230,118,.15);font-size:18px;font-weight:600;letter-spacing:2px}
-  /* Кнопка выбора полки */
+  input#barcode.ship-mode:focus{border-color:var(--accent-red);box-shadow:0 0 0 3px rgba(255,61,87,.15)}
+  /* Кнопка полки */
   .shelf-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--muted);width:100%;text-align:left;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center}
   .shelf-btn.selected{border-color:var(--accent-green);color:var(--text);box-shadow:0 0 0 3px rgba(0,230,118,.15)}
   .shelf-btn.error{border-color:var(--accent-red)}
   .shelf-arrow{font-size:12px;color:var(--muted);transition:transform .2s}
   .shelf-arrow.open{transform:rotate(180deg)}
+  .shelf-field{display:none}
+  .shelf-field.show{display:flex;flex-direction:column;gap:6px}
   /* Дропдаун */
   .shelf-dropdown{display:none;background:var(--surface);border:1px solid var(--accent-blue);border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6);margin-top:4px}
   .shelf-dropdown.open{display:block}
@@ -41,12 +44,9 @@
   .dropdown-header{padding:8px 16px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.3);border-bottom:1px solid var(--border)}
   .dropdown-item{padding:13px 16px;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);transition:background .15s}
   .dropdown-item:last-child{border-bottom:none}
-  .dropdown-item.free{color:var(--accent-green)}
-  .dropdown-item.free:hover{background:rgba(0,230,118,.08)}
-  .dropdown-item.this-order{color:var(--accent-blue)}
-  .dropdown-item.this-order:hover{background:rgba(68,138,255,.08)}
-  .dropdown-item.w-zone{color:var(--accent-orange)}
-  .dropdown-item.w-zone:hover{background:rgba(255,145,0,.08)}
+  .dropdown-item.free{color:var(--accent-green)}.dropdown-item.free:hover{background:rgba(0,230,118,.08)}
+  .dropdown-item.this-order{color:var(--accent-blue)}.dropdown-item.this-order:hover{background:rgba(68,138,255,.08)}
+  .dropdown-item.w-zone{color:var(--accent-orange)}.dropdown-item.w-zone:hover{background:rgba(255,145,0,.08)}
   .dropdown-item.occupied{color:var(--muted);cursor:not-allowed;opacity:.4}
   .dbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;white-space:nowrap}
   .dbadge-free{background:rgba(0,230,118,.12);color:var(--accent-green)}
@@ -54,14 +54,29 @@
   .dbadge-w{background:rgba(255,145,0,.12);color:var(--accent-orange)}
   .dbadge-occ{background:rgba(90,96,114,.12);color:var(--muted)}
   /* Инфо о заказе */
-  .order-info{display:none;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.3);border-radius:var(--radius);padding:12px 16px;animation:fadeIn .3s ease}
+  .order-info{display:none;border-radius:var(--radius);padding:12px 16px;animation:fadeIn .3s ease}
   .order-info.show{display:block}
+  .order-info.receive-mode{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.3)}
+  .order-info.ship-mode{background:rgba(255,61,87,.06);border:1px solid rgba(255,61,87,.3)}
   @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-  .order-info-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-green);margin-bottom:8px}
+  .order-info-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+  .receive-mode .order-info-title{color:var(--accent-green)}
+  .ship-mode .order-info-title{color:var(--accent-red)}
   .order-info-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)}
   .order-info-row:last-child{border-bottom:none}
   .order-info-key{color:var(--muted)}
   .order-info-val{color:var(--text);font-weight:600}
+  /* Кнопка подтверждения удаления */
+  .confirm-delete{display:none;background:rgba(255,61,87,.1);border:1px solid var(--accent-red);border-radius:var(--radius);padding:16px;animation:fadeIn .3s ease}
+  .confirm-delete.show{display:block}
+  .confirm-title{font-size:11px;color:var(--accent-red);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+  .confirm-detail{font-size:12px;color:var(--text);margin-bottom:14px;line-height:1.8}
+  .confirm-detail span{color:var(--accent-orange);font-weight:700}
+  .confirm-btns{display:flex;gap:8px}
+  .confirm-yes{flex:1;padding:14px;background:var(--accent-red);color:#fff;border:none;border-radius:8px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+  .confirm-yes:active{transform:scale(.98)}
+  .confirm-no{flex:1;padding:14px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+  /* Последняя */
   .last-toggle{display:flex;background:var(--surface);border-radius:var(--radius);padding:4px;border:1px solid var(--border);gap:4px}
   .last-btn{flex:1;padding:16px;border:none;background:none;color:var(--muted);font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:8px;cursor:pointer;transition:all .2s}
   .last-btn.active-no{background:var(--surface);color:var(--accent-green);border:1px solid var(--accent-green)}
@@ -91,7 +106,7 @@
   .log-info{color:var(--text);line-height:1.6}
   .log-time{color:var(--muted);font-size:10px;margin-top:2px}
   .empty-log{padding:20px;text-align:center;color:var(--muted);font-size:11px}
-  .settings-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;cursor:pointer;margin:0 16px 16px;width:calc(100% - 32px);transition:all .2s}
+  .settings-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;cursor:pointer;margin:0 16px 16px;width:calc(100% - 32px)}
   .settings-panel{display:none;margin:0 16px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
   .settings-panel.open{display:block}
   .settings-panel label{margin-bottom:8px;display:block}
@@ -118,15 +133,31 @@
     <span style="font-size:10px;color:var(--muted);padding:2px 0 0 2px">← курсор должен быть здесь при сканировании</span>
   </div>
 
-  <div class="order-info" id="orderInfo">
-    <div class="order-info-title">ℹ Заказ найден в таблице</div>
+  <!-- Инфо о заказе (и приёмка и отгрузка) -->
+  <div class="order-info receive-mode" id="orderInfo">
+    <div class="order-info-title" id="orderInfoTitle">ℹ Заказ найден</div>
     <div class="order-info-row"><span class="order-info-key">Номер заказа</span><span class="order-info-val" id="infoOrder">—</span></div>
     <div class="order-info-row"><span class="order-info-key">Год</span><span class="order-info-val" id="infoYear">—</span></div>
-    <div class="order-info-row"><span class="order-info-key">Полки заказа</span><span class="order-info-val" id="infoShelves">—</span></div>
-    <div class="order-info-row"><span class="order-info-key">Коробок принято</span><span class="order-info-val" id="infoCount">—</span></div>
+    <div class="order-info-row"><span class="order-info-key">Полки</span><span class="order-info-val" id="infoShelves">—</span></div>
+    <div class="order-info-row"><span class="order-info-key">Коробок в таблице</span><span class="order-info-val" id="infoCount">—</span></div>
   </div>
 
-  <div class="field">
+  <!-- Подтверждение удаления (только отгрузка) -->
+  <div class="confirm-delete" id="confirmDelete">
+    <div class="confirm-title">⚠ Подтверди отгрузку</div>
+    <div class="confirm-detail">
+      Заказ <span id="confirmOrder">—</span> будет удалён из таблицы.<br>
+      Строк к удалению: <span id="confirmCount">—</span><br>
+      Полки: <span id="confirmShelves">—</span>
+    </div>
+    <div class="confirm-btns">
+      <button class="confirm-yes" onclick="confirmShip()">✓ Да, удалить</button>
+      <button class="confirm-no" onclick="cancelShip()">✗ Отмена</button>
+    </div>
+  </div>
+
+  <!-- Поле полки (только приёмка) -->
+  <div class="shelf-field" id="shelfField">
     <label>Полка</label>
     <button class="shelf-btn" id="shelfBtn" onclick="toggleDropdown()">
       <span id="shelfBtnText">Выбери полку ↓</span>
@@ -137,7 +168,8 @@
     </div>
   </div>
 
-  <div class="field">
+  <!-- Последняя (только приёмка) -->
+  <div class="field" id="lastField">
     <label>Последняя коробка?</label>
     <div class="last-toggle">
       <button class="last-btn active-no" id="btnNo" onclick="setLast(false)">✓ Не последняя</button>
@@ -176,12 +208,34 @@
   let isLast = false;
   let selectedShelf = '';
   let currentOrderData = null;
+  let pendingDeleteBarcode = '';
   let log = JSON.parse(localStorage.getItem('wms_log') || '[]');
 
   document.getElementById('scriptUrl').value = localStorage.getItem('wms_url') || '';
   document.getElementById('workerName').value = localStorage.getItem('wms_worker') || '';
   renderLog();
+  updateUI();
 
+  function setOp(op) {
+    currentOp = op;
+    document.getElementById('btnReceive').className = 'op-btn'+(op==='receive'?' active-receive':'');
+    document.getElementById('btnShip').className = 'op-btn'+(op==='ship'?' active-ship':'');
+    const btn = document.getElementById('submitBtn');
+    btn.className = 'submit-btn '+(op==='receive'?'receive':'ship');
+    btn.textContent = op==='receive'?'✓ Записать приёмку':'▲ Отгрузить (найти заказ)';
+    updateUI();
+    resetForm();
+  }
+
+  function updateUI() {
+    const isShip = currentOp === 'ship';
+    document.getElementById('shelfField').className = isShip ? 'shelf-field' : 'shelf-field show';
+    document.getElementById('lastField').style.display = isShip ? 'none' : '';
+    document.getElementById('submitBtn').style.display = isShip ? 'none' : '';
+    document.getElementById('barcode').className = isShip ? 'ship-mode' : '';
+  }
+
+  // ---- ПРИЁМКА: полки ----
   function getAllShelves() {
     const s = [];
     'ABCDEFGHIJKLMNOPQ'.split('').forEach(l => { for(let n=1;n<=8;n++) s.push(l+n); });
@@ -194,202 +248,245 @@
     const shelfToOrder = (currentOrderData && currentOrderData.shelfToOrder) || {};
     const orderShelves = (currentOrderData && currentOrderData.shelves) || [];
     const scroll = document.getElementById('dropdownScroll');
-
     const thisOrder=[], free=[], wZone=[], occupied=[];
     all.forEach(s => {
-      if (s[0]==='W') { wZone.push(s); return; }
-      if (orderShelves.includes(s)) { thisOrder.push(s); return; }
-      if (!shelfToOrder[s]) { free.push(s); return; }
+      if (s[0]==='W'){wZone.push(s);return;}
+      if (orderShelves.includes(s)){thisOrder.push(s);return;}
+      if (!shelfToOrder[s]){free.push(s);return;}
       occupied.push(s);
     });
-
-    let html = '';
-
-    if (thisOrder.length) {
-      html += `<div class="dropdown-header">Полки этого заказа</div>`;
-      thisOrder.forEach(s => {
-        html += `<div class="dropdown-item this-order" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-order">этот заказ</span></div>`;
+    let html='';
+    if(thisOrder.length){
+      html+=`<div class="dropdown-header">Полки этого заказа</div>`;
+      thisOrder.forEach(s=>html+=`<div class="dropdown-item this-order" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-order">этот заказ</span></div>`);
+    }
+    html+=`<div class="dropdown-header">Свободные (${free.length})</div>`;
+    free.forEach(s=>html+=`<div class="dropdown-item free" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-free">свободна</span></div>`);
+    html+=`<div class="dropdown-header">Зона W — несколько заказов</div>`;
+    wZone.forEach(s=>html+=`<div class="dropdown-item w-zone" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-w">зона W</span></div>`);
+    if(occupied.length){
+      html+=`<div class="dropdown-header">Занятые (${occupied.length})</div>`;
+      occupied.forEach(s=>{
+        const who=shelfToOrder[s]||'?';
+        html+=`<div class="dropdown-item occupied"><span>${s}</span><span class="dbadge dbadge-occ">заказ ${who}</span></div>`;
       });
     }
-
-    html += `<div class="dropdown-header">Свободные (${free.length})</div>`;
-    free.forEach(s => {
-      html += `<div class="dropdown-item free" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-free">свободна</span></div>`;
-    });
-
-    html += `<div class="dropdown-header">Зона W — несколько заказов</div>`;
-    wZone.forEach(s => {
-      html += `<div class="dropdown-item w-zone" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-w">зона W</span></div>`;
-    });
-
-    if (occupied.length) {
-      html += `<div class="dropdown-header">Занятые (${occupied.length})</div>`;
-      occupied.forEach(s => {
-        const who = shelfToOrder[s] || '?';
-        html += `<div class="dropdown-item occupied"><span>${s}</span><span class="dbadge dbadge-occ">заказ ${who}</span></div>`;
-      });
-    }
-
-    scroll.innerHTML = html;
+    scroll.innerHTML=html;
   }
 
-  function toggleDropdown() {
-    const dd = document.getElementById('shelfDropdown');
-    const arrow = document.getElementById('shelfArrow');
-    const isOpen = dd.classList.contains('open');
-    if (isOpen) {
-      dd.classList.remove('open');
-      arrow.classList.remove('open');
-    } else {
-      renderDropdown();
-      dd.classList.add('open');
-      arrow.classList.add('open');
-    }
+  function toggleDropdown(){
+    const dd=document.getElementById('shelfDropdown');
+    const arrow=document.getElementById('shelfArrow');
+    if(dd.classList.contains('open')){dd.classList.remove('open');arrow.classList.remove('open');}
+    else{renderDropdown();dd.classList.add('open');arrow.classList.add('open');}
   }
 
-  function closeDropdown() {
+  function closeDropdown(){
     document.getElementById('shelfDropdown').classList.remove('open');
     document.getElementById('shelfArrow').classList.remove('open');
   }
 
-  function selectShelf(shelf) {
-    selectedShelf = shelf;
-    const btn = document.getElementById('shelfBtn');
-    const txt = document.getElementById('shelfBtnText');
-    txt.textContent = shelf;
-    btn.classList.add('selected');
-    btn.classList.remove('error');
+  function selectShelf(shelf){
+    selectedShelf=shelf;
+    document.getElementById('shelfBtnText').textContent=shelf;
+    document.getElementById('shelfBtn').classList.add('selected');
+    document.getElementById('shelfBtn').classList.remove('error');
     closeDropdown();
-    showToast('success', '✓ Полка ' + shelf + ' выбрана');
+    showToast('success','✓ Полка '+shelf+' выбрана');
   }
 
-  // Закрыть при клике вне
-  document.addEventListener('click', function(e) {
-    const field = e.target.closest('.field');
-    const dd = document.getElementById('shelfDropdown');
-    if (dd.classList.contains('open') && !e.target.closest('#shelfBtn') && !e.target.closest('#shelfDropdown')) {
-      closeDropdown();
-    }
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#shelfBtn')&&!e.target.closest('#shelfDropdown')) closeDropdown();
   });
 
-  document.getElementById('barcode').addEventListener('keydown', function(e) {
-    if (e.key==='Enter') { e.preventDefault(); const b=this.value.trim(); if(b) checkOrder(b); }
+  // ---- СКАНИРОВАНИЕ ----
+  document.getElementById('barcode').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();const b=this.value.trim();if(b) checkOrder(b);}
   });
 
-  function checkOrder(barcode) {
-    const url = localStorage.getItem('wms_url');
-    if (!url) {
-      renderDropdown();
-      document.getElementById('shelfDropdown').classList.add('open');
-      document.getElementById('shelfArrow').classList.add('open');
-      showToast('warn', '⚠ URL не задан · выбери полку вручную');
-      return;
+  function checkOrder(barcode){
+    const url=localStorage.getItem('wms_url');
+    if(!url){
+      if(currentOp==='receive'){renderDropdown();document.getElementById('shelfDropdown').classList.add('open');document.getElementById('shelfArrow').classList.add('open');}
+      showToast('warn','⚠ URL не задан');return;
     }
-    showToast('loading', '⟳ Проверяю заказ...');
-    const cbName = 'wms_cb_' + Date.now();
-    const script = document.createElement('script');
-    window[cbName] = function(data) {
-      if (document.head.contains(script)) document.head.removeChild(script);
+    showToast('loading','⟳ Ищу заказ...');
+    const cbName='wms_cb_'+Date.now();
+    const script=document.createElement('script');
+    window[cbName]=function(data){
+      if(document.head.contains(script))document.head.removeChild(script);
       delete window[cbName];
-      currentOrderData = data;
-      if (data.found) {
-        document.getElementById('infoOrder').textContent = data.orderNum;
-        document.getElementById('infoYear').textContent = data.year;
-        document.getElementById('infoShelves').textContent = data.shelves.join(', ') || '—';
-        document.getElementById('infoCount').textContent = data.count + ' шт.';
-        document.getElementById('orderInfo').classList.add('show');
-        showToast('success', '✓ Заказ найден · ' + data.count + ' коробок');
+      currentOrderData=data;
+
+      if(currentOp==='ship'){
+        handleShipScan(barcode,data);
       } else {
-        document.getElementById('orderInfo').classList.remove('show');
-        showToast('success', '✓ Новый заказ · выбери полку');
+        handleReceiveScan(data);
       }
-      renderDropdown();
-      document.getElementById('shelfDropdown').classList.add('open');
-      document.getElementById('shelfArrow').classList.add('open');
     };
-    script.onerror = function() {
-      if (document.head.contains(script)) document.head.removeChild(script);
+    script.onerror=function(){
+      if(document.head.contains(script))document.head.removeChild(script);
       delete window[cbName];
-      showToast('error', '✗ Нет связи с таблицей');
-      renderDropdown();
-      document.getElementById('shelfDropdown').classList.add('open');
-      document.getElementById('shelfArrow').classList.add('open');
+      showToast('error','✗ Нет связи с таблицей');
     };
-    script.src = url + '?action=check&barcode=' + encodeURIComponent(barcode) + '&callback=' + cbName;
+    script.src=url+'?action=check&barcode='+encodeURIComponent(barcode)+'&callback='+cbName;
     document.head.appendChild(script);
   }
 
-  async function submitScan() {
-    const barcode = document.getElementById('barcode').value.trim();
-    const url = localStorage.getItem('wms_url');
-    const worker = localStorage.getItem('wms_worker') || '';
+  // ---- ПРИЁМКА: показываем инфо + открываем дропдаун ----
+  function handleReceiveScan(data){
+    const oi=document.getElementById('orderInfo');
+    oi.className='order-info receive-mode';
+    if(data.found){
+      document.getElementById('orderInfoTitle').textContent='ℹ Заказ найден в таблице';
+      document.getElementById('infoOrder').textContent=data.orderNum;
+      document.getElementById('infoYear').textContent=data.year;
+      document.getElementById('infoShelves').textContent=data.shelves.join(', ')||'—';
+      document.getElementById('infoCount').textContent=data.count+' шт.';
+      oi.classList.add('show');
+      showToast('success','✓ Заказ найден · '+data.count+' коробок');
+    } else {
+      oi.classList.remove('show');
+      showToast('success','✓ Новый заказ · выбери полку');
+    }
+    renderDropdown();
+    document.getElementById('shelfDropdown').classList.add('open');
+    document.getElementById('shelfArrow').classList.add('open');
+  }
 
-    if (!barcode) { showToast('error','⚠ Введи или отсканируй штрихкод'); document.getElementById('barcode').focus(); return; }
-    if (!selectedShelf) {
-      showToast('error','⚠ Выбери полку');
-      document.getElementById('shelfBtn').classList.add('error');
-      renderDropdown();
-      document.getElementById('shelfDropdown').classList.add('open');
-      document.getElementById('shelfArrow').classList.add('open');
+  // ---- ОТГРУЗКА: показываем инфо + запрос подтверждения ----
+  function handleShipScan(barcode,data){
+    const oi=document.getElementById('orderInfo');
+    oi.className='order-info ship-mode';
+    document.getElementById('confirmDelete').classList.remove('show');
+
+    if(!data.found){
+      oi.classList.remove('show');
+      showToast('error','✗ Заказ не найден в таблице');
       return;
     }
 
-    const entry = {
-      timestamp: new Date().toLocaleString('ru'),
-      operation: currentOp==='receive'?'Приёмка':'Отгрузка',
-      barcode, shelf: selectedShelf,
-      isLast: isLast?'Да':'Нет', worker
-    };
+    // Показываем инфо
+    document.getElementById('orderInfoTitle').textContent='▲ Заказ найден · готов к отгрузке';
+    document.getElementById('infoOrder').textContent=data.orderNum;
+    document.getElementById('infoYear').textContent=data.year;
+    document.getElementById('infoShelves').textContent=data.shelves.join(', ')||'—';
+    document.getElementById('infoCount').textContent=data.count+' шт.';
+    oi.classList.add('show');
 
-    if (!url) { addToLog(entry); showToast('success','✓ Сохранено локально'); resetForm(); return; }
+    // Показываем подтверждение
+    pendingDeleteBarcode=barcode;
+    document.getElementById('confirmOrder').textContent=data.orderNum;
+    document.getElementById('confirmCount').textContent=data.count+' шт.';
+    document.getElementById('confirmShelves').textContent=data.shelves.join(', ')||'—';
+    document.getElementById('confirmDelete').classList.add('show');
 
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true; showToast('loading','⟳ Отправляю...');
-    try {
-      await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(entry) });
-      addToLog(entry); showToast('success','✓ Записано в таблицу!'); resetForm();
-    } catch(err) { showToast('error','✗ Ошибка сети'); }
-    finally { btn.disabled = false; }
+    showToast('warn','⚠ Подтверди отгрузку');
   }
 
-  function resetForm() {
-    document.getElementById('barcode').value = '';
-    selectedShelf = '';
-    document.getElementById('shelfBtnText').textContent = 'Выбери полку ↓';
+  // ---- ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ ----
+  function confirmShip(){
+    const url=localStorage.getItem('wms_url');
+    const worker=localStorage.getItem('wms_worker')||'';
+    if(!url||!pendingDeleteBarcode){showToast('error','✗ Нет данных');return;}
+
+    const orderNum=pendingDeleteBarcode.substring(0,5);
+    document.querySelector('.confirm-yes').disabled=true;
+    showToast('loading','⟳ Удаляю из таблицы...');
+
+    // JSONP для удаления
+    const cbName='wms_del_'+Date.now();
+    const script=document.createElement('script');
+    window[cbName]=function(data){
+      if(document.head.contains(script))document.head.removeChild(script);
+      delete window[cbName];
+      if(data.status==='ok'){
+        addToLog({
+          timestamp:new Date().toLocaleString('ru'),
+          operation:'Отгрузка',
+          barcode:pendingDeleteBarcode,
+          shelf:currentOrderData?currentOrderData.shelves.join(','):'',
+          isLast:'—',worker
+        });
+        showToast('success','✓ Заказ '+orderNum+' отгружен · удалено '+data.deleted+' строк');
+        resetForm();
+      } else {
+        showToast('error','✗ Ошибка удаления');
+        document.querySelector('.confirm-yes').disabled=false;
+      }
+    };
+    script.onerror=function(){
+      if(document.head.contains(script))document.head.removeChild(script);
+      delete window[cbName];
+      showToast('error','✗ Нет связи');
+      document.querySelector('.confirm-yes').disabled=false;
+    };
+    script.src=url+'?action=delete&barcode='+encodeURIComponent(pendingDeleteBarcode)+'&callback='+cbName;
+    document.head.appendChild(script);
+  }
+
+  function cancelShip(){
+    document.getElementById('confirmDelete').classList.remove('show');
+    pendingDeleteBarcode='';
+    showToast('warn','Отгрузка отменена');
+    resetForm();
+  }
+
+  // ---- ПРИЁМКА: запись ----
+  async function submitScan(){
+    const barcode=document.getElementById('barcode').value.trim();
+    const url=localStorage.getItem('wms_url');
+    const worker=localStorage.getItem('wms_worker')||'';
+    if(!barcode){showToast('error','⚠ Введи или отсканируй штрихкод');document.getElementById('barcode').focus();return;}
+    if(!selectedShelf){
+      showToast('error','⚠ Выбери полку');
+      document.getElementById('shelfBtn').classList.add('error');
+      renderDropdown();document.getElementById('shelfDropdown').classList.add('open');document.getElementById('shelfArrow').classList.add('open');
+      return;
+    }
+    const entry={timestamp:new Date().toLocaleString('ru'),operation:'Приёмка',barcode,shelf:selectedShelf,isLast:isLast?'Да':'Нет',worker};
+    if(!url){addToLog(entry);showToast('success','✓ Сохранено локально');resetForm();return;}
+    const btn=document.getElementById('submitBtn');
+    btn.disabled=true;showToast('loading','⟳ Отправляю...');
+    try{
+      await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
+      addToLog(entry);showToast('success','✓ Записано в таблицу!');resetForm();
+    }catch(err){showToast('error','✗ Ошибка сети');}
+    finally{btn.disabled=false;}
+  }
+
+  function resetForm(){
+    document.getElementById('barcode').value='';
+    selectedShelf='';
+    pendingDeleteBarcode='';
+    document.getElementById('shelfBtnText').textContent='Выбери полку ↓';
     document.getElementById('shelfBtn').classList.remove('selected','error');
     document.getElementById('orderInfo').classList.remove('show');
+    document.getElementById('confirmDelete').classList.remove('show');
+    document.querySelector('.confirm-yes').disabled=false;
     closeDropdown();
-    currentOrderData = null;
+    currentOrderData=null;
     document.getElementById('barcode').focus();
   }
 
-  function setOp(op) {
-    currentOp = op;
-    document.getElementById('btnReceive').className='op-btn'+(op==='receive'?' active-receive':'');
-    document.getElementById('btnShip').className='op-btn'+(op==='ship'?' active-ship':'');
-    const btn = document.getElementById('submitBtn');
-    btn.className='submit-btn '+(op==='receive'?'receive':'ship');
-    btn.textContent=op==='receive'?'✓ Записать приёмку':'✓ Записать отгрузку';
-  }
-
-  function setLast(val) {
+  function setLast(val){
     isLast=val;
     document.getElementById('btnYes').className='last-btn'+(val?' active-yes':'');
     document.getElementById('btnNo').className='last-btn'+(!val?' active-no':'');
   }
 
-  function addToLog(entry) {
-    log.unshift(entry); if(log.length>50) log=log.slice(0,50);
-    localStorage.setItem('wms_log',JSON.stringify(log)); renderLog();
+  function addToLog(entry){
+    log.unshift(entry);if(log.length>50)log=log.slice(0,50);
+    localStorage.setItem('wms_log',JSON.stringify(log));renderLog();
   }
 
-  function renderLog() {
+  function renderLog(){
     const el=document.getElementById('logItems');
     if(!log.length){el.innerHTML='<div class="empty-log">Записей пока нет</div>';return;}
     el.innerHTML=log.map(e=>`
       <div class="log-item">
         <span class="log-badge ${e.operation==='Приёмка'?'receive':'ship'}">${e.operation}</span>
-        ${e.isLast==='Да'?'<span class="log-last">⚠ посл.</span>':''}
+        ${e.isLast&&e.isLast!=='—'&&e.isLast==='Да'?'<span class="log-last">⚠ посл.</span>':''}
         <div>
           <div class="log-info">${e.barcode}${e.shelf?' · '+e.shelf:''}</div>
           <div class="log-time">${e.timestamp}${e.worker?' · '+e.worker:''}</div>
