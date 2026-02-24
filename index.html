@@ -10,6 +10,7 @@
     --bg:#0d0f14;--surface:#161a23;--border:#252b38;
     --accent-green:#00e676;--accent-red:#ff3d57;
     --accent-blue:#448aff;--accent-orange:#ff9100;
+    --accent-purple:#ce93d8;
     --text:#e8ecf4;--muted:#5a6072;--radius:12px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -28,7 +29,9 @@
   input[type=text]{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;width:100%;-webkit-appearance:none}
   input[type=text]:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(68,138,255,.15)}
   input#barcode:focus{border-color:var(--accent-green);box-shadow:0 0 0 3px rgba(0,230,118,.15);font-size:18px;font-weight:600;letter-spacing:2px}
-  .ship-mode input#barcode:focus{border-color:var(--accent-red);box-shadow:0 0 0 3px rgba(255,61,87,.15)}
+  .type-badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 10px;border-radius:6px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+  .type-badge.box{background:rgba(68,138,255,.15);color:var(--accent-blue)}
+  .type-badge.hardware{background:rgba(206,147,216,.15);color:var(--accent-purple)}
   .shelf-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--muted);width:100%;text-align:left;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center}
   .shelf-btn.selected{border-color:var(--accent-green);color:var(--text);box-shadow:0 0 0 3px rgba(0,230,118,.15)}
   .shelf-btn.error{border-color:var(--accent-red)}
@@ -49,7 +52,6 @@
   .dbadge-order{background:rgba(68,138,255,.12);color:var(--accent-blue)}
   .dbadge-w{background:rgba(255,145,0,.12);color:var(--accent-orange)}
   .dbadge-occ{background:rgba(90,96,114,.12);color:var(--muted)}
-  /* Инфо карточки */
   .info-card{display:none;border-radius:var(--radius);padding:12px 16px;animation:fadeIn .3s ease}
   .info-card.show{display:block}
   .info-card.green{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.3)}
@@ -62,14 +64,20 @@
   .card-row:last-child{border-bottom:none}
   .card-key{color:var(--muted)}
   .card-val{color:var(--text);font-weight:600}
-  /* Подтверждение отгрузки */
+  /* Счётчики коробок */
+  .count-row{display:flex;gap:8px;margin-top:4px}
+  .count-chip{flex:1;text-align:center;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700}
+  .count-chip.boxes{background:rgba(68,138,255,.1);border:1px solid rgba(68,138,255,.3);color:var(--accent-blue)}
+  .count-chip.hardware{background:rgba(206,147,216,.1);border:1px solid rgba(206,147,216,.3);color:var(--accent-purple)}
+  .count-chip-num{font-size:20px;font-weight:700;display:block;line-height:1.2}
+  .count-chip-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .confirm-box{display:none;background:rgba(255,61,87,.08);border:1px solid var(--accent-red);border-radius:var(--radius);padding:16px;animation:fadeIn .3s ease}
   .confirm-box.show{display:block}
   .confirm-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent-red);margin-bottom:10px}
   .confirm-text{font-size:13px;color:var(--text);margin-bottom:14px;line-height:1.8}
   .confirm-text b{color:var(--accent-orange)}
   .confirm-btns{display:flex;gap:8px}
-  .btn-yes{flex:1;padding:14px;background:var(--accent-red);color:#fff;border:none;border-radius:8px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+  .btn-yes{flex:1;padding:14px;background:var(--accent-red);color:#fff;border:none;border-radius:8px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
   .btn-yes:disabled{opacity:.5;cursor:not-allowed}
   .btn-no{flex:1;padding:14px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
   .last-toggle{display:flex;background:var(--surface);border-radius:var(--radius);padding:4px;border:1px solid var(--border);gap:4px}
@@ -96,6 +104,7 @@
   .log-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0}
   .log-badge.receive{background:rgba(0,230,118,.15);color:var(--accent-green)}
   .log-badge.ship{background:rgba(255,61,87,.15);color:var(--accent-red)}
+  .log-badge.hardware{background:rgba(206,147,216,.15);color:var(--accent-purple)}
   .log-last{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(255,145,0,.15);color:var(--accent-orange);white-space:nowrap;flex-shrink:0}
   .log-info{color:var(--text);line-height:1.6}
   .log-time{color:var(--muted);font-size:10px;margin-top:2px}
@@ -119,35 +128,56 @@
   <button class="op-btn" id="btnShip" onclick="setOp('ship')">▲ Отгрузка</button>
 </div>
 
-<div class="form" id="mainForm">
-
+<div class="form">
   <div class="field">
-    <label id="barcodeLabel">Штрихкод</label>
+    <label>Штрихкод</label>
     <input type="text" id="barcode" placeholder="Сканируй или введи вручную" autofocus autocomplete="off">
     <span style="font-size:10px;color:var(--muted);padding:2px 0 0 2px">← курсор должен быть здесь при сканировании</span>
   </div>
 
-  <!-- Инфо (приёмка) -->
+  <!-- Инфо приёмка -->
   <div class="info-card green" id="receiveInfo">
-    <div class="card-title">ℹ Заказ найден в таблице</div>
+    <div class="card-title">ℹ Заказ найден</div>
+    <div><span class="type-badge box" id="ri-typebadge">Коробка</span></div>
     <div class="card-row"><span class="card-key">Номер заказа</span><span class="card-val" id="ri-order">—</span></div>
     <div class="card-row"><span class="card-key">Год</span><span class="card-val" id="ri-year">—</span></div>
     <div class="card-row"><span class="card-key">Полки заказа</span><span class="card-val" id="ri-shelves">—</span></div>
-    <div class="card-row"><span class="card-key">Коробок принято</span><span class="card-val" id="ri-count">—</span></div>
+    <!-- Счётчики -->
+    <div class="count-row" style="margin-top:8px">
+      <div class="count-chip boxes">
+        <span class="count-chip-num" id="ri-boxes">0</span>
+        <span class="count-chip-label">коробок</span>
+      </div>
+      <div class="count-chip hardware">
+        <span class="count-chip-num" id="ri-hardware">0</span>
+        <span class="count-chip-label">фурнитура</span>
+      </div>
+    </div>
   </div>
 
-  <!-- Инфо + подтверждение (отгрузка) -->
+  <!-- Инфо отгрузка -->
   <div class="info-card red" id="shipInfo">
-    <div class="card-title">▲ Коробка найдена</div>
+    <div class="card-title">▲ Позиция найдена</div>
+    <div><span class="type-badge box" id="si-typebadge">Коробка</span></div>
     <div class="card-row"><span class="card-key">Штрихкод</span><span class="card-val" id="si-barcode">—</span></div>
     <div class="card-row"><span class="card-key">Номер заказа</span><span class="card-val" id="si-order">—</span></div>
     <div class="card-row"><span class="card-key">Полки заказа</span><span class="card-val" id="si-shelves">—</span></div>
-    <div class="card-row"><span class="card-key">Всего коробок в заказе</span><span class="card-val" id="si-count">—</span></div>
+    <div class="count-row" style="margin-top:8px">
+      <div class="count-chip boxes">
+        <span class="count-chip-num" id="si-boxes">0</span>
+        <span class="count-chip-label">коробок</span>
+      </div>
+      <div class="count-chip hardware">
+        <span class="count-chip-num" id="si-hardware">0</span>
+        <span class="count-chip-label">фурнитура</span>
+      </div>
+    </div>
   </div>
 
+  <!-- Подтверждение отгрузки -->
   <div class="confirm-box" id="confirmBox">
-    <div class="confirm-title">⚠ Подтверди отгрузку коробки</div>
-    <div class="confirm-text">Удалить коробку <b id="cb-barcode">—</b> из таблицы?<br>После удаления отменить нельзя.</div>
+    <div class="confirm-title">⚠ Подтверди отгрузку</div>
+    <div class="confirm-text">Удалить <b id="cb-type">коробку</b> <b id="cb-barcode">—</b> из таблицы?<br>После удаления отменить нельзя.</div>
     <div class="confirm-btns">
       <button class="btn-yes" id="btnConfirmYes" onclick="confirmShip()">✓ Да, отгрузить</button>
       <button class="btn-no" onclick="cancelShip()">✗ Отмена</button>
@@ -202,144 +232,130 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  let currentOp = 'receive';
-  let isLast = false;
-  let selectedShelf = '';
-  let currentOrderData = null;
-  let pendingBarcode = '';
-  let log = JSON.parse(localStorage.getItem('wms_log') || '[]');
+  let currentOp='receive', isLast=false, selectedShelf='';
+  let currentOrderData=null, pendingBarcode='';
+  let log=JSON.parse(localStorage.getItem('wms_log')||'[]');
 
-  document.getElementById('scriptUrl').value = localStorage.getItem('wms_url') || '';
-  document.getElementById('workerName').value = localStorage.getItem('wms_worker') || '';
+  document.getElementById('scriptUrl').value=localStorage.getItem('wms_url')||'';
+  document.getElementById('workerName').value=localStorage.getItem('wms_worker')||'';
   renderLog();
 
+  function parseBarcode(barcode) {
+    if (!barcode||barcode.length!==15) return {orderNum:'',year:'',boxNum:'',type:'Коробка'};
+    return {
+      orderNum: barcode.substring(0,5),
+      year: '20'+barcode.substring(8,10),
+      boxNum: barcode.substring(12,15),
+      type: barcode.substring(10,12)==='01'?'Коробка':'Фурнитура'
+    };
+  }
+
+  function setTypeBadge(el, type) {
+    el.textContent=type;
+    el.className='type-badge '+(type==='Фурнитура'?'hardware':'box');
+  }
+
   function setOp(op) {
-    currentOp = op;
-    document.getElementById('btnReceive').className = 'op-btn'+(op==='receive'?' active-receive':'');
-    document.getElementById('btnShip').className = 'op-btn'+(op==='ship'?' active-ship':'');
-    const isShip = op === 'ship';
-    document.getElementById('shelfField').style.display = isShip ? 'none' : '';
-    document.getElementById('lastField').style.display = isShip ? 'none' : '';
-    document.getElementById('submitBtn').style.display = isShip ? 'none' : '';
+    currentOp=op;
+    document.getElementById('btnReceive').className='op-btn'+(op==='receive'?' active-receive':'');
+    document.getElementById('btnShip').className='op-btn'+(op==='ship'?' active-ship':'');
+    document.getElementById('shelfField').style.display=op==='ship'?'none':'';
+    document.getElementById('lastField').style.display=op==='ship'?'none':'';
+    document.getElementById('submitBtn').style.display=op==='ship'?'none':'';
     resetForm();
   }
 
-  document.getElementById('barcode').addEventListener('keydown', function(e) {
-    if (e.key==='Enter') { e.preventDefault(); const b=this.value.trim(); if(b) checkOrder(b); }
+  document.getElementById('barcode').addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();const b=this.value.trim();if(b)checkOrder(b);}
   });
 
   function checkOrder(barcode) {
-    const url = localStorage.getItem('wms_url');
-    if (!url) {
-      if (currentOp==='receive') { renderDropdown(); openDropdown(); }
-      showToast('warn','⚠ URL не задан');
-      return;
-    }
-    showToast('loading','⟳ Ищу коробку...');
-    jsonp(url+'?action=check&barcode='+encodeURIComponent(barcode), function(data) {
-      currentOrderData = data;
-      if (currentOp==='ship') {
-        handleShip(barcode, data);
-      } else {
-        handleReceive(data);
-      }
+    const url=localStorage.getItem('wms_url');
+    if(!url){if(currentOp==='receive'){renderDropdown();openDropdown();}showToast('warn','⚠ URL не задан');return;}
+    showToast('loading','⟳ Ищу позицию...');
+    jsonp(url+'?action=check&barcode='+encodeURIComponent(barcode),function(data){
+      currentOrderData=data;
+      if(currentOp==='ship') handleShip(barcode,data);
+      else handleReceive(barcode,data);
     });
   }
 
-  // ---- ПРИЁМКА ----
-  function handleReceive(data) {
-    if (data.found) {
-      document.getElementById('ri-order').textContent = data.orderNum;
-      document.getElementById('ri-year').textContent = data.year;
-      document.getElementById('ri-shelves').textContent = data.shelves.join(', ')||'—';
-      document.getElementById('ri-count').textContent = data.count+' шт.';
+  function handleReceive(barcode,data) {
+    const parsed=parseBarcode(barcode);
+    const type=data.type||parsed.type;
+    setTypeBadge(document.getElementById('ri-typebadge'),type);
+    if(data.found){
+      document.getElementById('ri-order').textContent=data.orderNum;
+      document.getElementById('ri-year').textContent=data.year;
+      document.getElementById('ri-shelves').textContent=data.shelves.join(', ')||'—';
+      document.getElementById('ri-boxes').textContent=data.countBoxes||0;
+      document.getElementById('ri-hardware').textContent=data.countHardware||0;
       document.getElementById('receiveInfo').classList.add('show');
-      showToast('success','✓ Заказ найден · '+data.count+' коробок');
+      showToast('success','✓ Заказ найден · '+((data.countBoxes||0)+(data.countHardware||0))+' позиций');
     } else {
       document.getElementById('receiveInfo').classList.remove('show');
       showToast('success','✓ Новый заказ · выбери полку');
     }
-    renderDropdown();
-    openDropdown();
+    renderDropdown(); openDropdown();
   }
 
   async function submitReceive() {
-    const barcode = document.getElementById('barcode').value.trim();
-    const url = localStorage.getItem('wms_url');
-    const worker = localStorage.getItem('wms_worker')||'';
-    if (!barcode) { showToast('error','⚠ Введи штрихкод'); document.getElementById('barcode').focus(); return; }
-    if (!selectedShelf) {
-      showToast('error','⚠ Выбери полку');
-      document.getElementById('shelfBtn').classList.add('error');
-      renderDropdown(); openDropdown(); return;
-    }
-    const entry = { timestamp:new Date().toLocaleString('ru'), operation:'Приёмка', barcode, shelf:selectedShelf, isLast:isLast?'Да':'Нет', worker };
-    if (!url) { addToLog(entry); showToast('success','✓ Сохранено локально'); resetForm(); return; }
-    const btn = document.getElementById('submitBtn');
-    btn.disabled=true; showToast('loading','⟳ Отправляю...');
-    try {
+    const barcode=document.getElementById('barcode').value.trim();
+    const url=localStorage.getItem('wms_url');
+    const worker=localStorage.getItem('wms_worker')||'';
+    if(!barcode){showToast('error','⚠ Введи штрихкод');document.getElementById('barcode').focus();return;}
+    if(!selectedShelf){showToast('error','⚠ Выбери полку');document.getElementById('shelfBtn').classList.add('error');renderDropdown();openDropdown();return;}
+    const parsed=parseBarcode(barcode);
+    const entry={timestamp:new Date().toLocaleString('ru'),operation:'Приёмка',barcode,shelf:selectedShelf,isLast:isLast?'Да':'Нет',worker,type:parsed.type};
+    if(!url){addToLog(entry);showToast('success','✓ Сохранено локально');resetForm();return;}
+    const btn=document.getElementById('submitBtn');
+    btn.disabled=true;showToast('loading','⟳ Отправляю...');
+    try{
       await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});
-      addToLog(entry); showToast('success','✓ Записано в таблицу!'); resetForm();
-    } catch(err) { showToast('error','✗ Ошибка сети'); }
-    finally { btn.disabled=false; }
+      addToLog(entry);showToast('success','✓ Записано в таблицу!');resetForm();
+    }catch(err){showToast('error','✗ Ошибка сети');}
+    finally{btn.disabled=false;}
   }
 
-  // ---- ОТГРУЗКА ----
-  function handleShip(barcode, data) {
-    if (!data.barcodeFound) {
-      showToast('error','✗ Коробка не найдена в таблице');
-      document.getElementById('shipInfo').classList.remove('show');
-      document.getElementById('confirmBox').classList.remove('show');
-      return;
-    }
-    pendingBarcode = barcode;
-    document.getElementById('si-barcode').textContent = barcode;
-    document.getElementById('si-order').textContent = data.orderNum;
-    document.getElementById('si-shelves').textContent = data.shelves.join(', ')||'—';
-    document.getElementById('si-count').textContent = data.count+' шт.';
+  function handleShip(barcode,data) {
+    if(!data.barcodeFound){showToast('error','✗ Позиция не найдена в таблице');document.getElementById('shipInfo').classList.remove('show');document.getElementById('confirmBox').classList.remove('show');return;}
+    const parsed=parseBarcode(barcode);
+    const type=data.type||parsed.type;
+    setTypeBadge(document.getElementById('si-typebadge'),type);
+    document.getElementById('si-barcode').textContent=barcode;
+    document.getElementById('si-order').textContent=data.orderNum;
+    document.getElementById('si-shelves').textContent=data.shelves.join(', ')||'—';
+    document.getElementById('si-boxes').textContent=data.countBoxes||0;
+    document.getElementById('si-hardware').textContent=data.countHardware||0;
     document.getElementById('shipInfo').classList.add('show');
-    document.getElementById('cb-barcode').textContent = barcode;
+    pendingBarcode=barcode;
+    document.getElementById('cb-type').textContent=type.toLowerCase();
+    document.getElementById('cb-barcode').textContent=barcode;
     document.getElementById('confirmBox').classList.add('show');
     showToast('warn','⚠ Подтверди отгрузку');
   }
 
   function confirmShip() {
-    const url = localStorage.getItem('wms_url');
-    const worker = localStorage.getItem('wms_worker')||'';
-    if (!url||!pendingBarcode) { showToast('error','✗ Нет данных'); return; }
-    document.getElementById('btnConfirmYes').disabled = true;
-    showToast('loading','⟳ Удаляю коробку...');
-    jsonp(url+'?action=delete&barcode='+encodeURIComponent(pendingBarcode), function(data) {
-      if (data.status==='ok') {
-        addToLog({ timestamp:new Date().toLocaleString('ru'), operation:'Отгрузка', barcode:pendingBarcode, shelf:currentOrderData?currentOrderData.shelves.join(','):'', isLast:'—', worker });
-        showToast('success','✓ Коробка отгружена и удалена из таблицы');
+    const url=localStorage.getItem('wms_url');
+    const worker=localStorage.getItem('wms_worker')||'';
+    if(!url||!pendingBarcode){showToast('error','✗ Нет данных');return;}
+    document.getElementById('btnConfirmYes').disabled=true;
+    showToast('loading','⟳ Удаляю позицию...');
+    jsonp(url+'?action=delete&barcode='+encodeURIComponent(pendingBarcode),function(data){
+      if(data.status==='ok'){
+        const parsed=parseBarcode(pendingBarcode);
+        addToLog({timestamp:new Date().toLocaleString('ru'),operation:'Отгрузка',barcode:pendingBarcode,shelf:currentOrderData?currentOrderData.shelves.join(','):'',isLast:'—',worker,type:parsed.type});
+        showToast('success','✓ Позиция отгружена и удалена');
         resetForm();
-      } else {
-        showToast('error','✗ Коробка не найдена');
-        document.getElementById('btnConfirmYes').disabled=false;
-      }
-    }, function() {
-      showToast('error','✗ Ошибка сети');
-      document.getElementById('btnConfirmYes').disabled=false;
-    });
+      }else{showToast('error','✗ Позиция не найдена');document.getElementById('btnConfirmYes').disabled=false;}
+    },function(){showToast('error','✗ Ошибка сети');document.getElementById('btnConfirmYes').disabled=false;});
   }
 
-  function cancelShip() {
-    document.getElementById('confirmBox').classList.remove('show');
-    document.getElementById('shipInfo').classList.remove('show');
-    pendingBarcode='';
-    resetForm();
-  }
+  function cancelShip(){document.getElementById('confirmBox').classList.remove('show');document.getElementById('shipInfo').classList.remove('show');pendingBarcode='';resetForm();}
 
-  // ---- ПОЛКИ ----
-  function getAllShelves() {
-    const s=[];
-    'ABCDEFGHIJKLMNOPQ'.split('').forEach(l=>{for(let n=1;n<=8;n++)s.push(l+n);});
-    for(let n=1;n<=7;n++) s.push('W'+n);
-    return s;
-  }
+  function getAllShelves(){const s=[];'ABCDEFGHIJKLMNOPQ'.split('').forEach(l=>{for(let n=1;n<=8;n++)s.push(l+n);});for(let n=1;n<=7;n++)s.push('W'+n);return s;}
 
-  function renderDropdown() {
+  function renderDropdown(){
     const all=getAllShelves();
     const shelfToOrder=(currentOrderData&&currentOrderData.shelfToOrder)||{};
     const orderShelves=(currentOrderData&&currentOrderData.shelves)||[];
@@ -352,80 +368,46 @@
       occupied.push(s);
     });
     let html='';
-    if(thisOrder.length){
-      html+=`<div class="dropdown-header">Полки этого заказа</div>`;
-      thisOrder.forEach(s=>html+=`<div class="dropdown-item this-order" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-order">этот заказ</span></div>`);
-    }
+    if(thisOrder.length){html+=`<div class="dropdown-header">Полки этого заказа</div>`;thisOrder.forEach(s=>html+=`<div class="dropdown-item this-order" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-order">этот заказ</span></div>`);}
     html+=`<div class="dropdown-header">Свободные (${free.length})</div>`;
     free.forEach(s=>html+=`<div class="dropdown-item free" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-free">свободна</span></div>`);
     html+=`<div class="dropdown-header">Зона W — несколько заказов</div>`;
     wZone.forEach(s=>html+=`<div class="dropdown-item w-zone" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-w">зона W</span></div>`);
-    if(occupied.length){
-      html+=`<div class="dropdown-header">Занятые (${occupied.length})</div>`;
-      occupied.forEach(s=>{const who=shelfToOrder[s]||'?';html+=`<div class="dropdown-item occupied"><span>${s}</span><span class="dbadge dbadge-occ">заказ ${who}</span></div>`;});
-    }
+    if(occupied.length){html+=`<div class="dropdown-header">Занятые (${occupied.length})</div>`;occupied.forEach(s=>{const who=shelfToOrder[s]||'?';html+=`<div class="dropdown-item occupied"><span>${s}</span><span class="dbadge dbadge-occ">заказ ${who}</span></div>`;});}
     scroll.innerHTML=html;
   }
 
   function openDropdown(){document.getElementById('shelfDropdown').classList.add('open');document.getElementById('shelfArrow').classList.add('open');}
   function closeDropdown(){document.getElementById('shelfDropdown').classList.remove('open');document.getElementById('shelfArrow').classList.remove('open');}
   function toggleDropdown(){const dd=document.getElementById('shelfDropdown');dd.classList.contains('open')?closeDropdown():(renderDropdown(),openDropdown());}
+  function selectShelf(shelf){selectedShelf=shelf;document.getElementById('shelfBtnText').textContent=shelf;document.getElementById('shelfBtn').classList.add('selected');document.getElementById('shelfBtn').classList.remove('error');closeDropdown();showToast('success','✓ Полка '+shelf+' выбрана');}
+  document.addEventListener('click',function(e){if(!e.target.closest('#shelfBtn')&&!e.target.closest('#shelfDropdown'))closeDropdown();});
 
-  function selectShelf(shelf){
-    selectedShelf=shelf;
-    document.getElementById('shelfBtnText').textContent=shelf;
-    document.getElementById('shelfBtn').classList.add('selected');
-    document.getElementById('shelfBtn').classList.remove('error');
-    closeDropdown();
-    showToast('success','✓ Полка '+shelf+' выбрана');
-  }
-
-  document.addEventListener('click',function(e){
-    if(!e.target.closest('#shelfBtn')&&!e.target.closest('#shelfDropdown')) closeDropdown();
-  });
-
-  // ---- ВСПОМОГАТЕЛЬНОЕ ----
-  function jsonp(url, onSuccess, onError) {
+  function jsonp(url,onSuccess,onError){
     const cbName='wms_cb_'+Date.now();
     const script=document.createElement('script');
-    window[cbName]=function(data){
-      if(document.head.contains(script))document.head.removeChild(script);
-      delete window[cbName];
-      onSuccess(data);
-    };
-    script.onerror=function(){
-      if(document.head.contains(script))document.head.removeChild(script);
-      delete window[cbName];
-      if(onError) onError();
-      else showToast('error','✗ Нет связи');
-    };
+    window[cbName]=function(data){if(document.head.contains(script))document.head.removeChild(script);delete window[cbName];onSuccess(data);};
+    script.onerror=function(){if(document.head.contains(script))document.head.removeChild(script);delete window[cbName];if(onError)onError();else showToast('error','✗ Нет связи');};
     script.src=url+'&callback='+cbName;
     document.head.appendChild(script);
   }
 
   function resetForm(){
     document.getElementById('barcode').value='';
-    selectedShelf=''; pendingBarcode='';
+    selectedShelf='';pendingBarcode='';
     document.getElementById('shelfBtnText').textContent='Выбери полку ↓';
     document.getElementById('shelfBtn').classList.remove('selected','error');
     document.getElementById('receiveInfo').classList.remove('show');
     document.getElementById('shipInfo').classList.remove('show');
     document.getElementById('confirmBox').classList.remove('show');
     document.getElementById('btnConfirmYes').disabled=false;
-    closeDropdown(); currentOrderData=null;
+    closeDropdown();currentOrderData=null;
     document.getElementById('barcode').focus();
   }
 
-  function setLast(val){
-    isLast=val;
-    document.getElementById('btnYes').className='last-btn'+(val?' active-yes':'');
-    document.getElementById('btnNo').className='last-btn'+(!val?' active-no':'');
-  }
+  function setLast(val){isLast=val;document.getElementById('btnYes').className='last-btn'+(val?' active-yes':'');document.getElementById('btnNo').className='last-btn'+(!val?' active-no':'');}
 
-  function addToLog(entry){
-    log.unshift(entry);if(log.length>50)log=log.slice(0,50);
-    localStorage.setItem('wms_log',JSON.stringify(log));renderLog();
-  }
+  function addToLog(entry){log.unshift(entry);if(log.length>50)log=log.slice(0,50);localStorage.setItem('wms_log',JSON.stringify(log));renderLog();}
 
   function renderLog(){
     const el=document.getElementById('logItems');
@@ -433,6 +415,7 @@
     el.innerHTML=log.map(e=>`
       <div class="log-item">
         <span class="log-badge ${e.operation==='Приёмка'?'receive':'ship'}">${e.operation}</span>
+        ${e.type==='Фурнитура'?'<span class="log-badge hardware">фурнитура</span>':''}
         ${e.isLast==='Да'?'<span class="log-last">⚠ посл.</span>':''}
         <div>
           <div class="log-info">${e.barcode}${e.shelf?' · '+e.shelf:''}</div>
@@ -442,21 +425,9 @@
   }
 
   function clearLog(){log=[];localStorage.removeItem('wms_log');renderLog();}
-
-  function showToast(type,msg){
-    const t=document.getElementById('toast');
-    t.className=`toast ${type}`;t.textContent=msg;t.classList.add('show');
-    clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),3500);
-  }
-
+  function showToast(type,msg){const t=document.getElementById('toast');t.className=`toast ${type}`;t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),3500);}
   function toggleSettings(){document.getElementById('settingsPanel').classList.toggle('open');}
-
-  function saveSettings(){
-    localStorage.setItem('wms_url',document.getElementById('scriptUrl').value.trim());
-    localStorage.setItem('wms_worker',document.getElementById('workerName').value.trim());
-    document.getElementById('settingsPanel').classList.remove('open');
-    showToast('success','✓ Настройки сохранены');
-  }
+  function saveSettings(){localStorage.setItem('wms_url',document.getElementById('scriptUrl').value.trim());localStorage.setItem('wms_worker',document.getElementById('workerName').value.trim());document.getElementById('settingsPanel').classList.remove('open');showToast('success','✓ Настройки сохранены');}
 </script>
 </body>
 </html>
