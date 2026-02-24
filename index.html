@@ -410,8 +410,16 @@
   function openDropdown(){document.getElementById('shelfDropdown').classList.add('open');document.getElementById('shelfArrow').classList.add('open');}
   function closeDropdown(){document.getElementById('shelfDropdown').classList.remove('open');document.getElementById('shelfArrow').classList.remove('open');}
   function toggleDropdown(){const dd=document.getElementById('shelfDropdown');dd.classList.contains('open')?closeDropdown():(renderDropdown(),openDropdown());}
-  function selectShelf(shelf){selectedShelf=shelf;document.getElementById('shelfBtnText').textContent=shelf;document.getElementById('shelfBtn').classList.add('selected');document.getElementById('shelfBtn').classList.remove('error');closeDropdown();showToast('success','✓ Полка '+shelf+' выбрана');}
-  document.addEventListener('click',function(e){if(!e.target.closest('#shelfBtn')&&!e.target.closest('#shelfDropdown'))closeDropdown();});
+function selectShelf(shelf){
+  selectedShelf=shelf;
+  document.getElementById('shelfBtnText').textContent=shelf;
+  document.getElementById('shelfBtn').classList.add('selected');
+  document.getElementById('shelfBtn').classList.remove('error');
+  closeDropdown();
+  showToast('success','✓ Полка '+shelf+' выбрана');
+  // Фокус на кнопку записи
+  setTimeout(()=>document.getElementById('submitBtn').focus(), 100);
+}  document.addEventListener('click',function(e){if(!e.target.closest('#shelfBtn')&&!e.target.closest('#shelfDropdown'))closeDropdown();});
 
   function jsonp(url,onSuccess,onError){
     const cbName='wms_cb_'+Date.now();
