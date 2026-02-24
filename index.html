@@ -64,9 +64,8 @@
   .card-row:last-child{border-bottom:none}
   .card-key{color:var(--muted)}
   .card-val{color:var(--text);font-weight:600}
-  /* Счётчики коробок */
-  .count-row{display:flex;gap:8px;margin-top:4px}
-  .count-chip{flex:1;text-align:center;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700}
+  .count-row{display:flex;gap:8px;margin-top:8px}
+  .count-chip{flex:1;text-align:center;padding:8px 4px;border-radius:8px}
   .count-chip.boxes{background:rgba(68,138,255,.1);border:1px solid rgba(68,138,255,.3);color:var(--accent-blue)}
   .count-chip.hardware{background:rgba(206,147,216,.1);border:1px solid rgba(206,147,216,.3);color:var(--accent-purple)}
   .count-chip-num{font-size:20px;font-weight:700;display:block;line-height:1.2}
@@ -131,50 +130,34 @@
 <div class="form">
   <div class="field">
     <label>Штрихкод</label>
-    <input type="text" id="barcode" placeholder="Сканируй или введи вручную" autofocus autocomplete="off">
+    <input type="text" id="barcode" placeholder="Сканируй или введи вручную" autofocus autocomplete="off" inputmode="none">
     <span style="font-size:10px;color:var(--muted);padding:2px 0 0 2px">← курсор должен быть здесь при сканировании</span>
   </div>
 
-  <!-- Инфо приёмка -->
   <div class="info-card green" id="receiveInfo">
     <div class="card-title">ℹ Заказ найден</div>
     <div><span class="type-badge box" id="ri-typebadge">Коробка</span></div>
     <div class="card-row"><span class="card-key">Номер заказа</span><span class="card-val" id="ri-order">—</span></div>
     <div class="card-row"><span class="card-key">Год</span><span class="card-val" id="ri-year">—</span></div>
     <div class="card-row"><span class="card-key">Полки заказа</span><span class="card-val" id="ri-shelves">—</span></div>
-    <!-- Счётчики -->
-    <div class="count-row" style="margin-top:8px">
-      <div class="count-chip boxes">
-        <span class="count-chip-num" id="ri-boxes">0</span>
-        <span class="count-chip-label">коробок</span>
-      </div>
-      <div class="count-chip hardware">
-        <span class="count-chip-num" id="ri-hardware">0</span>
-        <span class="count-chip-label">фурнитура</span>
-      </div>
+    <div class="count-row">
+      <div class="count-chip boxes"><span class="count-chip-num" id="ri-boxes">0</span><span class="count-chip-label">коробок</span></div>
+      <div class="count-chip hardware"><span class="count-chip-num" id="ri-hardware">0</span><span class="count-chip-label">фурнитура</span></div>
     </div>
   </div>
 
-  <!-- Инфо отгрузка -->
   <div class="info-card red" id="shipInfo">
     <div class="card-title">▲ Позиция найдена</div>
     <div><span class="type-badge box" id="si-typebadge">Коробка</span></div>
     <div class="card-row"><span class="card-key">Штрихкод</span><span class="card-val" id="si-barcode">—</span></div>
     <div class="card-row"><span class="card-key">Номер заказа</span><span class="card-val" id="si-order">—</span></div>
     <div class="card-row"><span class="card-key">Полки заказа</span><span class="card-val" id="si-shelves">—</span></div>
-    <div class="count-row" style="margin-top:8px">
-      <div class="count-chip boxes">
-        <span class="count-chip-num" id="si-boxes">0</span>
-        <span class="count-chip-label">коробок</span>
-      </div>
-      <div class="count-chip hardware">
-        <span class="count-chip-num" id="si-hardware">0</span>
-        <span class="count-chip-label">фурнитура</span>
-      </div>
+    <div class="count-row">
+      <div class="count-chip boxes"><span class="count-chip-num" id="si-boxes">0</span><span class="count-chip-label">коробок</span></div>
+      <div class="count-chip hardware"><span class="count-chip-num" id="si-hardware">0</span><span class="count-chip-label">фурнитура</span></div>
     </div>
   </div>
 
-  <!-- Подтверждение отгрузки -->
   <div class="confirm-box" id="confirmBox">
     <div class="confirm-title">⚠ Подтверди отгрузку</div>
     <div class="confirm-text">Удалить <b id="cb-type">коробку</b> <b id="cb-barcode">—</b> из таблицы?<br>После удаления отменить нельзя.</div>
@@ -184,7 +167,6 @@
     </div>
   </div>
 
-  <!-- Полка (только приёмка) -->
   <div class="field" id="shelfField">
     <label>Полка</label>
     <button class="shelf-btn" id="shelfBtn" onclick="toggleDropdown()">
@@ -196,7 +178,6 @@
     </div>
   </div>
 
-  <!-- Последняя (только приёмка) -->
   <div class="field" id="lastField">
     <label>Последняя коробка?</label>
     <div class="last-toggle">
@@ -241,18 +222,35 @@
   renderLog();
 
   function parseBarcode(barcode) {
-    if (!barcode||barcode.length!==15) return {orderNum:'',year:'',boxNum:'',type:'Коробка'};
+    if(!barcode||barcode.length!==15) return {orderNum:'',year:'',boxNum:'',type:'Коробка'};
     return {
-      orderNum: barcode.substring(0,5),
-      year: '20'+barcode.substring(8,10),
-      boxNum: barcode.substring(12,15),
-      type: barcode.substring(10,12)==='01'?'Коробка':'Фурнитура'
+      orderNum:barcode.substring(0,5),
+      year:'20'+barcode.substring(8,10),
+      boxNum:barcode.substring(12,15),
+      type:barcode.substring(10,12)==='01'?'Коробка':'Фурнитура'
     };
   }
 
-  function setTypeBadge(el, type) {
-    el.textContent=type;
-    el.className='type-badge '+(type==='Фурнитура'?'hardware':'box');
+  function setTypeBadge(el,type){el.textContent=type;el.className='type-badge '+(type==='Фурнитура'?'hardware':'box');}
+
+  function dismissKeyboard() {
+    // Убираем фокус — клавиатура закрывается на мобильных
+    const el = document.getElementById('barcode');
+    el.blur();
+    // Небольшой трюк для iOS: создаём временный input вне экрана и сразу blur
+    const tmp = document.createElement('input');
+    tmp.style.cssText = 'position:fixed;top:-100px;left:-100px;opacity:0;';
+    document.body.appendChild(tmp);
+    tmp.focus();
+    tmp.blur();
+    document.body.removeChild(tmp);
+  }
+
+  function scrollToCard(cardId) {
+    setTimeout(() => {
+      const card = document.getElementById(cardId);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
   }
 
   function setOp(op) {
@@ -266,14 +264,26 @@
   }
 
   document.getElementById('barcode').addEventListener('keydown',function(e){
-    if(e.key==='Enter'){e.preventDefault();const b=this.value.trim();if(b)checkOrder(b);}
+    if(e.key==='Enter'){
+      e.preventDefault();
+      const b=this.value.trim();
+      if(b) checkOrder(b);
+    }
   });
 
   function checkOrder(barcode) {
     const url=localStorage.getItem('wms_url');
-    if(!url){if(currentOp==='receive'){renderDropdown();openDropdown();}showToast('warn','⚠ URL не задан');return;}
+
+    // Закрываем клавиатуру сразу
+    dismissKeyboard();
+
+    if(!url){
+      if(currentOp==='receive'){renderDropdown();openDropdown();}
+      showToast('warn','⚠ URL не задан');
+      return;
+    }
     showToast('loading','⟳ Ищу позицию...');
-    jsonp(url+'?action=check&barcode='+encodeURIComponent(barcode),function(data){
+    jsonp(url+'?action=check&barcode='+encodeURIComponent(barcode), function(data){
       currentOrderData=data;
       if(currentOp==='ship') handleShip(barcode,data);
       else handleReceive(barcode,data);
@@ -297,6 +307,8 @@
       showToast('success','✓ Новый заказ · выбери полку');
     }
     renderDropdown(); openDropdown();
+    // Скролл к карточке
+    scrollToCard('receiveInfo');
   }
 
   async function submitReceive() {
@@ -318,7 +330,12 @@
   }
 
   function handleShip(barcode,data) {
-    if(!data.barcodeFound){showToast('error','✗ Позиция не найдена в таблице');document.getElementById('shipInfo').classList.remove('show');document.getElementById('confirmBox').classList.remove('show');return;}
+    if(!data.barcodeFound){
+      showToast('error','✗ Позиция не найдена в таблице');
+      document.getElementById('shipInfo').classList.remove('show');
+      document.getElementById('confirmBox').classList.remove('show');
+      return;
+    }
     const parsed=parseBarcode(barcode);
     const type=data.type||parsed.type;
     setTypeBadge(document.getElementById('si-typebadge'),type);
@@ -333,6 +350,8 @@
     document.getElementById('cb-barcode').textContent=barcode;
     document.getElementById('confirmBox').classList.add('show');
     showToast('warn','⚠ Подтверди отгрузку');
+    // Скролл к карточке
+    scrollToCard('shipInfo');
   }
 
   function confirmShip() {
@@ -347,11 +366,22 @@
         addToLog({timestamp:new Date().toLocaleString('ru'),operation:'Отгрузка',barcode:pendingBarcode,shelf:currentOrderData?currentOrderData.shelves.join(','):'',isLast:'—',worker,type:parsed.type});
         showToast('success','✓ Позиция отгружена и удалена');
         resetForm();
-      }else{showToast('error','✗ Позиция не найдена');document.getElementById('btnConfirmYes').disabled=false;}
-    },function(){showToast('error','✗ Ошибка сети');document.getElementById('btnConfirmYes').disabled=false;});
+      }else{
+        showToast('error','✗ Позиция не найдена');
+        document.getElementById('btnConfirmYes').disabled=false;
+      }
+    },function(){
+      showToast('error','✗ Ошибка сети');
+      document.getElementById('btnConfirmYes').disabled=false;
+    });
   }
 
-  function cancelShip(){document.getElementById('confirmBox').classList.remove('show');document.getElementById('shipInfo').classList.remove('show');pendingBarcode='';resetForm();}
+  function cancelShip(){
+    document.getElementById('confirmBox').classList.remove('show');
+    document.getElementById('shipInfo').classList.remove('show');
+    pendingBarcode='';
+    resetForm();
+  }
 
   function getAllShelves(){const s=[];'ABCDEFGHIJKLMNOPQ'.split('').forEach(l=>{for(let n=1;n<=8;n++)s.push(l+n);});for(let n=1;n<=7;n++)s.push('W'+n);return s;}
 
@@ -402,11 +432,11 @@
     document.getElementById('confirmBox').classList.remove('show');
     document.getElementById('btnConfirmYes').disabled=false;
     closeDropdown();currentOrderData=null;
-    document.getElementById('barcode').focus();
+    // После сброса возвращаем фокус на штрихкод
+    setTimeout(()=>document.getElementById('barcode').focus(),300);
   }
 
   function setLast(val){isLast=val;document.getElementById('btnYes').className='last-btn'+(val?' active-yes':'');document.getElementById('btnNo').className='last-btn'+(!val?' active-no':'');}
-
   function addToLog(entry){log.unshift(entry);if(log.length>50)log=log.slice(0,50);localStorage.setItem('wms_log',JSON.stringify(log));renderLog();}
 
   function renderLog(){
