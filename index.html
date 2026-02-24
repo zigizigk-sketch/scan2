@@ -10,7 +10,6 @@
     --bg:#0d0f14;--surface:#161a23;--border:#252b38;
     --accent-green:#00e676;--accent-red:#ff3d57;
     --accent-blue:#448aff;--accent-orange:#ff9100;
-    --accent-purple:#b388ff;
     --text:#e8ecf4;--muted:#5a6072;--radius:12px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -29,16 +28,31 @@
   input[type=text]{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;width:100%;-webkit-appearance:none}
   input[type=text]:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(68,138,255,.15)}
   input#barcode:focus{border-color:var(--accent-green);box-shadow:0 0 0 3px rgba(0,230,118,.15);font-size:18px;font-weight:600;letter-spacing:2px}
-  input#shelf{text-transform:uppercase;font-size:20px;font-weight:700;letter-spacing:3px;text-align:center}
-  input#shelf.shelf-ok{border-color:var(--accent-green);box-shadow:0 0 0 3px rgba(0,230,118,.15)}
-  input#shelf.shelf-error{border-color:var(--accent-red);box-shadow:0 0 0 3px rgba(255,61,87,.2)}
-  input#shelf.shelf-warn{border-color:var(--accent-orange);box-shadow:0 0 0 3px rgba(255,145,0,.2)}
-  .scan-hint{font-size:10px;color:var(--muted);padding:2px 0 0 2px}
-  .shelf-hint{font-size:11px;padding:6px 2px 0;display:none}
-  .shelf-hint.show{display:block}
-  .shelf-hint.error{color:var(--accent-red)}
-  .shelf-hint.warn{color:var(--accent-orange)}
-  .shelf-hint.ok{color:var(--accent-green)}
+  /* Кнопка выбора полки */
+  .shelf-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;letter-spacing:3px;color:var(--muted);width:100%;text-align:left;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center}
+  .shelf-btn.selected{border-color:var(--accent-green);color:var(--text);box-shadow:0 0 0 3px rgba(0,230,118,.15)}
+  .shelf-btn.error{border-color:var(--accent-red)}
+  .shelf-arrow{font-size:12px;color:var(--muted);transition:transform .2s}
+  .shelf-arrow.open{transform:rotate(180deg)}
+  /* Дропдаун */
+  .shelf-dropdown{display:none;background:var(--surface);border:1px solid var(--accent-blue);border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6);margin-top:4px}
+  .shelf-dropdown.open{display:block}
+  .dropdown-scroll{max-height:260px;overflow-y:auto}
+  .dropdown-header{padding:8px 16px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.3);border-bottom:1px solid var(--border)}
+  .dropdown-item{padding:13px 16px;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);transition:background .15s}
+  .dropdown-item:last-child{border-bottom:none}
+  .dropdown-item.free{color:var(--accent-green)}
+  .dropdown-item.free:hover{background:rgba(0,230,118,.08)}
+  .dropdown-item.this-order{color:var(--accent-blue)}
+  .dropdown-item.this-order:hover{background:rgba(68,138,255,.08)}
+  .dropdown-item.w-zone{color:var(--accent-orange)}
+  .dropdown-item.w-zone:hover{background:rgba(255,145,0,.08)}
+  .dropdown-item.occupied{color:var(--muted);cursor:not-allowed;opacity:.4}
+  .dbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;white-space:nowrap}
+  .dbadge-free{background:rgba(0,230,118,.12);color:var(--accent-green)}
+  .dbadge-order{background:rgba(68,138,255,.12);color:var(--accent-blue)}
+  .dbadge-w{background:rgba(255,145,0,.12);color:var(--accent-orange)}
+  .dbadge-occ{background:rgba(90,96,114,.12);color:var(--muted)}
   /* Инфо о заказе */
   .order-info{display:none;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.3);border-radius:var(--radius);padding:12px 16px;animation:fadeIn .3s ease}
   .order-info.show{display:block}
@@ -48,7 +62,6 @@
   .order-info-row:last-child{border-bottom:none}
   .order-info-key{color:var(--muted)}
   .order-info-val{color:var(--text);font-weight:600}
-  /* Переключатель последняя */
   .last-toggle{display:flex;background:var(--surface);border-radius:var(--radius);padding:4px;border:1px solid var(--border);gap:4px}
   .last-btn{flex:1;padding:16px;border:none;background:none;color:var(--muted);font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:8px;cursor:pointer;transition:all .2s}
   .last-btn.active-no{background:var(--surface);color:var(--accent-green);border:1px solid var(--accent-green)}
@@ -102,10 +115,9 @@
   <div class="field">
     <label>Штрихкод</label>
     <input type="text" id="barcode" placeholder="Сканируй или введи вручную" autofocus autocomplete="off">
-    <span class="scan-hint">← курсор должен быть здесь при сканировании</span>
+    <span style="font-size:10px;color:var(--muted);padding:2px 0 0 2px">← курсор должен быть здесь при сканировании</span>
   </div>
 
-  <!-- Инфо о найденном заказе -->
   <div class="order-info" id="orderInfo">
     <div class="order-info-title">ℹ Заказ найден в таблице</div>
     <div class="order-info-row"><span class="order-info-key">Номер заказа</span><span class="order-info-val" id="infoOrder">—</span></div>
@@ -114,11 +126,15 @@
     <div class="order-info-row"><span class="order-info-key">Коробок принято</span><span class="order-info-val" id="infoCount">—</span></div>
   </div>
 
-  <!-- Ввод полки -->
   <div class="field">
-    <label>Полка (буква A–Q или W + цифра)</label>
-    <input type="text" id="shelf" placeholder="Напр: B4 или W3" autocomplete="off" maxlength="3" oninput="validateShelf(this)">
-    <div class="shelf-hint" id="shelfHint"></div>
+    <label>Полка</label>
+    <button class="shelf-btn" id="shelfBtn" onclick="toggleDropdown()">
+      <span id="shelfBtnText">Выбери полку ↓</span>
+      <span class="shelf-arrow" id="shelfArrow">▼</span>
+    </button>
+    <div class="shelf-dropdown" id="shelfDropdown">
+      <div class="dropdown-scroll" id="dropdownScroll"></div>
+    </div>
   </div>
 
   <div class="field">
@@ -158,6 +174,7 @@
 <script>
   let currentOp = 'receive';
   let isLast = false;
+  let selectedShelf = '';
   let currentOrderData = null;
   let log = JSON.parse(localStorage.getItem('wms_log') || '[]');
 
@@ -165,130 +182,116 @@
   document.getElementById('workerName').value = localStorage.getItem('wms_worker') || '';
   renderLog();
 
-  // Все допустимые полки
-  const NORMAL_LETTERS = 'ABCDEFGHIJKLMNOPQ'.split(''); // A-Q
-  const W_SECTIONS = [1,2,3,4,5,6,7]; // W1-W7
+  function getAllShelves() {
+    const s = [];
+    'ABCDEFGHIJKLMNOPQ'.split('').forEach(l => { for(let n=1;n<=8;n++) s.push(l+n); });
+    for(let n=1;n<=7;n++) s.push('W'+n);
+    return s;
+  }
 
-  function isValidShelf(val) {
-    if (!val) return false;
-    val = val.toUpperCase().trim();
-    if (val[0] === 'W') {
-      const num = parseInt(val.substring(1));
-      return W_SECTIONS.includes(num) && val.length === 2;
+  function renderDropdown() {
+    const all = getAllShelves();
+    const shelfToOrder = (currentOrderData && currentOrderData.shelfToOrder) || {};
+    const orderShelves = (currentOrderData && currentOrderData.shelves) || [];
+    const scroll = document.getElementById('dropdownScroll');
+
+    const thisOrder=[], free=[], wZone=[], occupied=[];
+    all.forEach(s => {
+      if (s[0]==='W') { wZone.push(s); return; }
+      if (orderShelves.includes(s)) { thisOrder.push(s); return; }
+      if (!shelfToOrder[s]) { free.push(s); return; }
+      occupied.push(s);
+    });
+
+    let html = '';
+
+    if (thisOrder.length) {
+      html += `<div class="dropdown-header">Полки этого заказа</div>`;
+      thisOrder.forEach(s => {
+        html += `<div class="dropdown-item this-order" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-order">этот заказ</span></div>`;
+      });
+    }
+
+    html += `<div class="dropdown-header">Свободные (${free.length})</div>`;
+    free.forEach(s => {
+      html += `<div class="dropdown-item free" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-free">свободна</span></div>`;
+    });
+
+    html += `<div class="dropdown-header">Зона W — несколько заказов</div>`;
+    wZone.forEach(s => {
+      html += `<div class="dropdown-item w-zone" onclick="selectShelf('${s}')"><span>${s}</span><span class="dbadge dbadge-w">зона W</span></div>`;
+    });
+
+    if (occupied.length) {
+      html += `<div class="dropdown-header">Занятые (${occupied.length})</div>`;
+      occupied.forEach(s => {
+        const who = shelfToOrder[s] || '?';
+        html += `<div class="dropdown-item occupied"><span>${s}</span><span class="dbadge dbadge-occ">заказ ${who}</span></div>`;
+      });
+    }
+
+    scroll.innerHTML = html;
+  }
+
+  function toggleDropdown() {
+    const dd = document.getElementById('shelfDropdown');
+    const arrow = document.getElementById('shelfArrow');
+    const isOpen = dd.classList.contains('open');
+    if (isOpen) {
+      dd.classList.remove('open');
+      arrow.classList.remove('open');
     } else {
-      const letter = val[0];
-      const num = parseInt(val.substring(1));
-      return NORMAL_LETTERS.includes(letter) && num >= 1 && num <= 8 && val.length === 2;
+      renderDropdown();
+      dd.classList.add('open');
+      arrow.classList.add('open');
     }
   }
 
-  function isWZone(val) {
-    return val && val.toUpperCase()[0] === 'W';
+  function closeDropdown() {
+    document.getElementById('shelfDropdown').classList.remove('open');
+    document.getElementById('shelfArrow').classList.remove('open');
   }
 
-  function validateShelf(input) {
-    const val = input.value.toUpperCase().trim();
-    input.value = val;
-    const hint = document.getElementById('shelfHint');
-
-    if (!val) {
-      input.classList.remove('shelf-ok','shelf-error','shelf-warn');
-      hint.className = 'shelf-hint';
-      hint.textContent = '';
-      return;
-    }
-
-    if (!isValidShelf(val)) {
-      input.classList.add('shelf-error');
-      input.classList.remove('shelf-ok','shelf-warn');
-      hint.className = 'shelf-hint error show';
-      if (val[0] === 'W') {
-        hint.textContent = '⚠ Зона W: введи W1–W7';
-      } else {
-        hint.textContent = '⚠ Введи букву A–Q и цифру 1–8. Например: B4';
-      }
-      return;
-    }
-
-    // Полка валидна — проверяем конфликт с данными из таблицы
-    if (currentOrderData) {
-      const orderNum = document.getElementById('barcode').value.substring(0,5);
-      const shelfToOrder = currentOrderData.shelfToOrder || {};
-      const existingOrder = shelfToOrder[val];
-
-      if (isWZone(val)) {
-        // W-зона: всегда разрешено
-        input.classList.add('shelf-ok');
-        input.classList.remove('shelf-error','shelf-warn');
-        hint.className = 'shelf-hint ok show';
-        hint.textContent = '✓ Зона W — несколько заказов разрешено';
-      } else if (existingOrder && existingOrder !== orderNum) {
-        // Полка занята другим заказом
-        input.classList.add('shelf-error');
-        input.classList.remove('shelf-ok','shelf-warn');
-        hint.className = 'shelf-hint error show';
-        hint.textContent = '⛔ Полка занята заказом ' + existingOrder;
-      } else if (existingOrder === orderNum) {
-        // Полка уже есть у этого заказа
-        input.classList.add('shelf-ok');
-        input.classList.remove('shelf-error','shelf-warn');
-        hint.className = 'shelf-hint ok show';
-        hint.textContent = '✓ Полка этого заказа';
-      } else {
-        // Свободная полка
-        input.classList.add('shelf-ok');
-        input.classList.remove('shelf-error','shelf-warn');
-        hint.className = 'shelf-hint ok show';
-        hint.textContent = '✓ Полка свободна';
-      }
-    } else {
-      // Нет данных из таблицы — просто валидный формат
-      input.classList.add('shelf-ok');
-      input.classList.remove('shelf-error','shelf-warn');
-      hint.className = 'shelf-hint ok show';
-      hint.textContent = isWZone(val) ? '✓ Зона W — несколько заказов разрешено' : '✓ Формат верный';
-    }
+  function selectShelf(shelf) {
+    selectedShelf = shelf;
+    const btn = document.getElementById('shelfBtn');
+    const txt = document.getElementById('shelfBtnText');
+    txt.textContent = shelf;
+    btn.classList.add('selected');
+    btn.classList.remove('error');
+    closeDropdown();
+    showToast('success', '✓ Полка ' + shelf + ' выбрана');
   }
 
-  // Автофокус на штрихкод
+  // Закрыть при клике вне
   document.addEventListener('click', function(e) {
-    const noFocus = ['scriptUrl','workerName','shelf','submitBtn','btnReceive','btnShip','btnNo','btnYes'];
-    if (!noFocus.includes(e.target.id) && !e.target.classList.contains('settings-save') && !e.target.classList.contains('log-clear') && !e.target.classList.contains('op-btn') && !e.target.classList.contains('last-btn')) {
-      if (document.getElementById('settingsPanel').classList.contains('open')) return;
-      setTimeout(() => document.getElementById('barcode').focus(), 50);
+    const field = e.target.closest('.field');
+    const dd = document.getElementById('shelfDropdown');
+    if (dd.classList.contains('open') && !e.target.closest('#shelfBtn') && !e.target.closest('#shelfDropdown')) {
+      closeDropdown();
     }
   });
 
   document.getElementById('barcode').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const b = this.value.trim();
-      if (b) checkOrder(b);
-    }
-  });
-
-  document.getElementById('shelf').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); submitScan(); }
+    if (e.key==='Enter') { e.preventDefault(); const b=this.value.trim(); if(b) checkOrder(b); }
   });
 
   function checkOrder(barcode) {
     const url = localStorage.getItem('wms_url');
     if (!url) {
-      showToast('warn', '⚠ URL скрипта не задан');
-      document.getElementById('shelf').focus();
+      renderDropdown();
+      document.getElementById('shelfDropdown').classList.add('open');
+      document.getElementById('shelfArrow').classList.add('open');
+      showToast('warn', '⚠ URL не задан · выбери полку вручную');
       return;
     }
-
     showToast('loading', '⟳ Проверяю заказ...');
-
     const cbName = 'wms_cb_' + Date.now();
     const script = document.createElement('script');
-
     window[cbName] = function(data) {
       if (document.head.contains(script)) document.head.removeChild(script);
       delete window[cbName];
       currentOrderData = data;
-
       if (data.found) {
         document.getElementById('infoOrder').textContent = data.orderNum;
         document.getElementById('infoYear').textContent = data.year;
@@ -298,133 +301,92 @@
         showToast('success', '✓ Заказ найден · ' + data.count + ' коробок');
       } else {
         document.getElementById('orderInfo').classList.remove('show');
-        showToast('success', '✓ Новый заказ · введи полку');
+        showToast('success', '✓ Новый заказ · выбери полку');
       }
-
-      document.getElementById('shelf').focus();
-      // Перевалидируем полку если уже введена
-      const shelfVal = document.getElementById('shelf').value;
-      if (shelfVal) validateShelf(document.getElementById('shelf'));
+      renderDropdown();
+      document.getElementById('shelfDropdown').classList.add('open');
+      document.getElementById('shelfArrow').classList.add('open');
     };
-
     script.onerror = function() {
       if (document.head.contains(script)) document.head.removeChild(script);
       delete window[cbName];
       showToast('error', '✗ Нет связи с таблицей');
-      document.getElementById('shelf').focus();
+      renderDropdown();
+      document.getElementById('shelfDropdown').classList.add('open');
+      document.getElementById('shelfArrow').classList.add('open');
     };
-
     script.src = url + '?action=check&barcode=' + encodeURIComponent(barcode) + '&callback=' + cbName;
     document.head.appendChild(script);
   }
 
   async function submitScan() {
     const barcode = document.getElementById('barcode').value.trim();
-    const shelf = document.getElementById('shelf').value.trim().toUpperCase();
     const url = localStorage.getItem('wms_url');
     const worker = localStorage.getItem('wms_worker') || '';
 
-    if (!barcode) {
-      showToast('error', '⚠ Введи или отсканируй штрихкод');
-      document.getElementById('barcode').focus();
+    if (!barcode) { showToast('error','⚠ Введи или отсканируй штрихкод'); document.getElementById('barcode').focus(); return; }
+    if (!selectedShelf) {
+      showToast('error','⚠ Выбери полку');
+      document.getElementById('shelfBtn').classList.add('error');
+      renderDropdown();
+      document.getElementById('shelfDropdown').classList.add('open');
+      document.getElementById('shelfArrow').classList.add('open');
       return;
-    }
-    if (!shelf) {
-      showToast('error', '⚠ Введи полку');
-      document.getElementById('shelf').focus();
-      return;
-    }
-    if (!isValidShelf(shelf)) {
-      showToast('error', '⚠ Неверный формат полки');
-      document.getElementById('shelf').focus();
-      return;
-    }
-
-    // Проверка занятости полки (только для не-W зон)
-    if (!isWZone(shelf) && currentOrderData) {
-      const orderNum = barcode.substring(0, 5);
-      const shelfToOrder = currentOrderData.shelfToOrder || {};
-      const existingOrder = shelfToOrder[shelf];
-      if (existingOrder && existingOrder !== orderNum) {
-        showToast('error', '⛔ Полка занята заказом ' + existingOrder);
-        document.getElementById('shelf').focus();
-        return;
-      }
     }
 
     const entry = {
       timestamp: new Date().toLocaleString('ru'),
-      operation: currentOp === 'receive' ? 'Приёмка' : 'Отгрузка',
-      barcode, shelf,
-      isLast: isLast ? 'Да' : 'Нет',
-      worker
+      operation: currentOp==='receive'?'Приёмка':'Отгрузка',
+      barcode, shelf: selectedShelf,
+      isLast: isLast?'Да':'Нет', worker
     };
 
-    if (!url) {
-      addToLog(entry);
-      showToast('success', '✓ Сохранено локально');
-      resetForm();
-      return;
-    }
+    if (!url) { addToLog(entry); showToast('success','✓ Сохранено локально'); resetForm(); return; }
 
     const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    showToast('loading', '⟳ Отправляю...');
-
+    btn.disabled = true; showToast('loading','⟳ Отправляю...');
     try {
-      await fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry)
-      });
-      addToLog(entry);
-      showToast('success', '✓ Записано в таблицу!');
-      resetForm();
-    } catch(err) {
-      showToast('error', '✗ Ошибка сети');
-    } finally {
-      btn.disabled = false;
-    }
+      await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(entry) });
+      addToLog(entry); showToast('success','✓ Записано в таблицу!'); resetForm();
+    } catch(err) { showToast('error','✗ Ошибка сети'); }
+    finally { btn.disabled = false; }
   }
 
   function resetForm() {
     document.getElementById('barcode').value = '';
-    document.getElementById('shelf').value = '';
-    document.getElementById('shelf').classList.remove('shelf-ok','shelf-error','shelf-warn');
-    document.getElementById('shelfHint').className = 'shelf-hint';
-    document.getElementById('shelfHint').textContent = '';
+    selectedShelf = '';
+    document.getElementById('shelfBtnText').textContent = 'Выбери полку ↓';
+    document.getElementById('shelfBtn').classList.remove('selected','error');
     document.getElementById('orderInfo').classList.remove('show');
+    closeDropdown();
     currentOrderData = null;
     document.getElementById('barcode').focus();
   }
 
   function setOp(op) {
     currentOp = op;
-    document.getElementById('btnReceive').className = 'op-btn' + (op==='receive'?' active-receive':'');
-    document.getElementById('btnShip').className = 'op-btn' + (op==='ship'?' active-ship':'');
+    document.getElementById('btnReceive').className='op-btn'+(op==='receive'?' active-receive':'');
+    document.getElementById('btnShip').className='op-btn'+(op==='ship'?' active-ship':'');
     const btn = document.getElementById('submitBtn');
-    btn.className = 'submit-btn ' + (op==='receive'?'receive':'ship');
-    btn.textContent = op==='receive' ? '✓ Записать приёмку' : '✓ Записать отгрузку';
+    btn.className='submit-btn '+(op==='receive'?'receive':'ship');
+    btn.textContent=op==='receive'?'✓ Записать приёмку':'✓ Записать отгрузку';
   }
 
   function setLast(val) {
-    isLast = val;
-    document.getElementById('btnYes').className = 'last-btn' + (val?' active-yes':'');
-    document.getElementById('btnNo').className = 'last-btn' + (!val?' active-no':'');
+    isLast=val;
+    document.getElementById('btnYes').className='last-btn'+(val?' active-yes':'');
+    document.getElementById('btnNo').className='last-btn'+(!val?' active-no':'');
   }
 
   function addToLog(entry) {
-    log.unshift(entry);
-    if (log.length > 50) log = log.slice(0, 50);
-    localStorage.setItem('wms_log', JSON.stringify(log));
-    renderLog();
+    log.unshift(entry); if(log.length>50) log=log.slice(0,50);
+    localStorage.setItem('wms_log',JSON.stringify(log)); renderLog();
   }
 
   function renderLog() {
-    const el = document.getElementById('logItems');
-    if (!log.length) { el.innerHTML = '<div class="empty-log">Записей пока нет</div>'; return; }
-    el.innerHTML = log.map(e => `
+    const el=document.getElementById('logItems');
+    if(!log.length){el.innerHTML='<div class="empty-log">Записей пока нет</div>';return;}
+    el.innerHTML=log.map(e=>`
       <div class="log-item">
         <span class="log-badge ${e.operation==='Приёмка'?'receive':'ship'}">${e.operation}</span>
         ${e.isLast==='Да'?'<span class="log-last">⚠ посл.</span>':''}
@@ -435,22 +397,21 @@
       </div>`).join('');
   }
 
-  function clearLog() { log=[]; localStorage.removeItem('wms_log'); renderLog(); }
+  function clearLog(){log=[];localStorage.removeItem('wms_log');renderLog();}
 
-  function showToast(type, msg) {
-    const t = document.getElementById('toast');
-    t.className = `toast ${type}`; t.textContent = msg; t.classList.add('show');
-    clearTimeout(window._tt);
-    window._tt = setTimeout(() => t.classList.remove('show'), 3500);
+  function showToast(type,msg){
+    const t=document.getElementById('toast');
+    t.className=`toast ${type}`;t.textContent=msg;t.classList.add('show');
+    clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),3500);
   }
 
-  function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
+  function toggleSettings(){document.getElementById('settingsPanel').classList.toggle('open');}
 
-  function saveSettings() {
-    localStorage.setItem('wms_url', document.getElementById('scriptUrl').value.trim());
-    localStorage.setItem('wms_worker', document.getElementById('workerName').value.trim());
+  function saveSettings(){
+    localStorage.setItem('wms_url',document.getElementById('scriptUrl').value.trim());
+    localStorage.setItem('wms_worker',document.getElementById('workerName').value.trim());
     document.getElementById('settingsPanel').classList.remove('open');
-    showToast('success', '✓ Настройки сохранены');
+    showToast('success','✓ Настройки сохранены');
   }
 </script>
 </body>
